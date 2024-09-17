@@ -11,14 +11,7 @@ export const Container = styled.button`
   justify-content: center;
   align-items: center;
   
-  gap: 30px;
-  
-  > h1 {
-    color: white;
-    width: 500px;
-    font-size: 100px;
-    text-align: center;
-  }
+  gap: 30px; 
 `;
 
 export const Icon = styled.div`
