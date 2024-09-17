@@ -11,7 +11,7 @@ export const Container = styled.button`
   justify-content: center;
   align-items: center;
   
-  gap: 30px; 
+  gap: 30px;
 `;
 
 export const Icon = styled.div`
