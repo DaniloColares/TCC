@@ -15,7 +15,7 @@ export function WaterLevel() {
         <FiArrowLeft size={50}/>
       </ArrowIcon>
       <FaWater size={350}/>
-      {!needWater ? (
+      {needWater ? (
         <p>Atenção! O nível de água está baixo! Abasteça o reservatório!</p>
       ) : (
         <p>O nível de água no reservatório está bom! Verifique novamente mais tarde!</p>

@@ -12,7 +12,6 @@ export function Splash() {
       <Icon>
         <FaTree size={200}/>
       </Icon>
-      <h1>save my plant</h1>
     </Container>
   )
 }

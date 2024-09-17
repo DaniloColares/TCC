@@ -12,13 +12,6 @@ export const Container = styled.button`
   align-items: center;
   
   gap: 30px;
-  
-  > h1 {
-    color: white;
-    width: 500px;
-    font-size: 100px;
-    text-align: center;
-  }
 `;
 
 export const Icon = styled.div`
