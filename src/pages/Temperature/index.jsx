@@ -1,49 +1,44 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, ArrowIcon } from "./styles";
-import mqtt from "mqtt";
-import { FiArrowLeft, FiSun } from "react-icons/fi";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import mqtt from 'mqtt';
+import { Container, ArrowIcon } from './styles';
+import { FiArrowLeft, FiSun } from 'react-icons/fi';
 
-// Tópicos MQTT
-const PUBLISH_TOPIC = '/ifce/tnc_temp_sensor';  // Tópico que publica a temperatura
-const SUBSCRIBE_TOPIC = '/ifce/tnc_command';    // Tópico que recebe comandos
+// Tópico MQTT
+const TEMPERATURE_TOPIC = '/ifce/tnc_temp_sensor';
 
 export function Temperature() {
-  const [metrics, setMetrics] = useState('');
+  const [metrics, setMetrics] = useState(''); // Armazena o valor da temperatura
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Conectar ao broker público EMQX
-    const client = mqtt.connect('mqtt://broker.emqx.io:1883'); // Conexão via MQTT na porta 1883
+    // Conecta ao broker MQTT
+    const client = mqtt.connect('mqtt://broker.emqx.io:1883');
+    
+    client.on('connect', () => {
+      console.log('Conectado ao broker MQTT');
+      client.subscribe(TEMPERATURE_TOPIC); // Inscreve-se no tópico de temperatura
+    });
 
-    client.on('connect', handleConnection);
+    // Recebe as mensagens do MQTT
+    client.on('message', (topic, message) => {
+      if (topic === TEMPERATURE_TOPIC) {
+        const temperature = message.toString(); // Converte a mensagem recebida em string
+        setMetrics(temperature); // Atualiza o estado com a nova temperatura
+      }
+    });
 
-    function handleConnection() {
-      console.log("Conectado ao broker EMQX");
-      client.subscribe(SUBSCRIBE_TOPIC); // Inscreve-se no tópico de comando
+    // Configuração para atualizar o valor a cada intervalo de tempo (ex: a cada 5 segundos)
+    const intervalId = setInterval(() => {
+      client.publish('/ifce/tnc_command', 'get_temperature'); // Envia comando para atualizar a temperatura
+    }, 5000); // Intervalo de 5 segundos para buscar novos dados
 
-      // Publicar temperatura no tópico especificado
-      client.publish(PUBLISH_TOPIC, '25.5'); // Exemplo: publicando uma temperatura de 25.5°C
-
-      client.on('message', (topic, message) => {
-        if (topic === SUBSCRIBE_TOPIC) {
-          const command = message.toString(); // Converte a mensagem para string
-          console.log(`Comando recebido: ${command}`);
-          speakCommand(command); // Fala o comando recebido
-        }
-      });
-    }
-
+    // Limpa o intervalo e desconecta do MQTT ao desmontar o componente
     return () => {
-      client.end(); // Finaliza a conexão MQTT quando o componente desmonta
+      clearInterval(intervalId); // Limpa o intervalo ao desmontar
+      client.end(); // Finaliza a conexão MQTT
     };
   }, []);
-
-  // Função para converter o comando recebido em fala
-  function speakCommand(command) {
-    const utterance = new SpeechSynthesisUtterance(`O comando recebido foi: ${command}`);
-    speechSynthesis.speak(utterance); // Converte o texto em fala
-  }
 
   return (
     <Container>
@@ -51,7 +46,7 @@ export function Temperature() {
         <FiArrowLeft size={50} />
       </ArrowIcon>
       <FiSun size={350} />
-      <p>A temperatura atual no jarro é: {metrics} °C</p>
+      <p>A temperatura atual no jarro é: {metrics}°C </p>
     </Container>
   );
 }
