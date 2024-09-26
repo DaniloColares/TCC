@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import InputMask from 'react-input-mask';
 import { useNavigate } from 'react-router-dom';
 import mqtt from 'mqtt';
 import { ArrowIcon, ButtonAction, ButtonsFooter, Circle, CircleBackground, CircleProgress, Content, Footer, TimerTextWrapper, TimerText } from './styles';
 import { FiArrowLeft, FiPlay, FiStopCircle } from 'react-icons/fi';
 
-// Tópicos MQTT
-const COMMAND_TOPIC = '/ifce/tnc_command'; // Tópico para enviar comando ao ESP
-const MOISTURE_TOPIC = '/ifce/tnc_soil_moisture'; // Tópico que recebe as leituras de umidade
+// Tópico MQTT para receber as leituras de umidade
+const MOISTURE_TOPIC = '/ifce/plantsupport_umid'; // Tópico para umidade da planta
 
 export function TimerIrrigation() {
   const [timeLeft, setTimeLeft] = useState(0);
@@ -17,14 +16,15 @@ export function TimerIrrigation() {
   const [isSoilDry, setIsSoilDry] = useState(false); // Estado que verifica se o solo está seco
   const [moistureLevel, setMoistureLevel] = useState(0); // Estado para armazenar a leitura de umidade
   const navigate = useNavigate();
+  const inputRef = useRef(null); // Utilizando ref para evitar `findDOMNode`
 
   useEffect(() => {
-    // Conecta ao broker público EMQX
-    const client = mqtt.connect('mqtt://broker.emqx.io:1883');
+    // Conecta ao broker público EMQX via WSS
+    const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
     
     client.on('connect', () => {
-      console.log('Conectado ao broker MQTT');
-      client.subscribe(MOISTURE_TOPIC); // Inscreve-se no tópico de umidade do solo
+      console.log('Conectado ao broker MQTT via WSS');
+      client.subscribe(MOISTURE_TOPIC); // Inscreve-se no tópico de umidade da planta
     });
 
     // Recebe leituras de umidade
@@ -48,13 +48,6 @@ export function TimerIrrigation() {
     };
   }, []);
 
-  // Função para enviar comando de irrigação via MQTT
-  const sendIrrigationCommand = (client) => {
-    const commandMessage = 'Irrigar'; // Mensagem de comando
-    client.publish(COMMAND_TOPIC, commandMessage); // Publica a mensagem no tópico
-    console.log(`Comando enviado: ${commandMessage}`);
-  };
-
   // Lógica do timer para contar o tempo
   useEffect(() => {
     if (!isPaused && timeLeft > 0) {
@@ -63,10 +56,6 @@ export function TimerIrrigation() {
       }, 1000);
 
       return () => clearTimeout(timerId);
-    } else if (timeLeft === 0 && !isPaused) {
-      // Quando o tempo se esgota, enviar o comando para irrigar
-      const client = mqtt.connect('mqtt://broker.emqx.io:1883');
-      sendIrrigationCommand(client);
     }
   }, [timeLeft, isPaused]);
 
@@ -138,6 +127,7 @@ export function TimerIrrigation() {
             value={inputValue}
             onChange={handleInputChange}
             placeholder="HH:MM:SS"
+            ref={inputRef} // Utilizando ref diretamente no InputMask
             style={{marginTop: '30px', border: 'none', width: '500px', height: '80px', borderRadius: '10px'}}
           >
             {(inputProps) => <input {...inputProps} type="text" style={{marginTop: '30px', border: '5px solid green', padding: '20px', width: '500px', height: '80px', borderRadius: '10px', fontSize: '50px', textAlign: 'center', color: 'green' }}/> }
