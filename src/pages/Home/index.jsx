@@ -26,7 +26,7 @@ export function Home() {
       </div>
       <div>
         <ButtonIcon icon={FaWater} onClick={() => navigate("/waterlevel")}/>
-        <ButtonLabel>Reservatório</ButtonLabel>
+        <ButtonLabel>Bomba</ButtonLabel>
       </div>
     </Container>
   )

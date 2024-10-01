@@ -49,8 +49,8 @@ export function Temperature() {
     // Verifica a diferença de temperatura
     if (temp1 && temp2) {
       const diff = Math.abs(parseFloat(temp1) - parseFloat(temp2));
-      if (diff > 5) {
-        setMessage('A planta está no sol! Diferença de temperatura maior que 5°C');
+      if (diff > 2) {
+        setMessage('A planta está no sol! Diferença de temperatura maior que 2°C');
       } else {
         setMessage('A planta está na sombra. Diferença de temperatura aceitável.');
       }
