@@ -79,3 +79,10 @@ export const ButtonAction = styled.button`
   border: 2px solid green;
   color: green;
 `;
+export const ButtonActivate = styled.button`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px solid blue; 
+  color: blue;
+`;

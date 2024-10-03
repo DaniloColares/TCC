@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import InputMask from 'react-input-mask';
 import { useNavigate } from 'react-router-dom';
 import mqtt from 'mqtt';
-import { ArrowIcon, ButtonAction, ButtonsFooter, Circle, CircleBackground, CircleProgress, Content, Footer, TimerTextWrapper, TimerText } from './styles';
-import { FiArrowLeft, FiPlay, FiStopCircle } from 'react-icons/fi';
+import { ArrowIcon, ButtonAction, ButtonActivate, ButtonsFooter, Circle, CircleBackground, CircleProgress, Content, Footer, TimerTextWrapper, TimerText } from './styles';
+import { FiArrowLeft, FiPlay, FiStopCircle, FiPower } from 'react-icons/fi'; // Ícone FiPower para o botão de ativação manual
 
-// Tópico MQTT para receber as leituras de umidade
 const MOISTURE_TOPIC = '/ifce/plantsupport_umid'; // Tópico para umidade da planta
 
 export function TimerIrrigation() {
@@ -35,9 +34,10 @@ export function TimerIrrigation() {
         console.log(`Nível de umidade do solo: ${moisture}%`);
         
         // Verifica se a umidade está abaixo do limite (exemplo: 30%)
-        if (moisture < 30) {
+        if (moisture < 30 && !isSoilDry) {
           setIsSoilDry(true);
-        } else {
+          handleStartTimer(); // Inicia o timer automaticamente quando o solo estiver seco
+        } else if (moisture >= 30) {
           setIsSoilDry(false);
         }
       }
@@ -46,7 +46,7 @@ export function TimerIrrigation() {
     return () => {
       client.end(); // Finaliza a conexão MQTT quando o componente desmonta
     };
-  }, []);
+  }, [isSoilDry]); // O efeito é executado sempre que `isSoilDry` mudar
 
   // Lógica do timer para contar o tempo
   useEffect(() => {
@@ -75,19 +75,21 @@ export function TimerIrrigation() {
     setInputValue(e.target.value);
   };
 
-  const handleConfirmClick = () => {
-    if (isSoilDry) { // Verifica se o solo está seco antes de iniciar o timer
-      const newExpirationTime = parseTimeToSeconds(inputValue);
-      setTimeLeft(newExpirationTime);
-      setInitialTime(newExpirationTime);
-      setIsPaused(false);
-    } else {
-      alert('O solo está úmido. Não é necessário iniciar a irrigação.');
-    }
+  const handleStartTimer = () => {
+    const newExpirationTime = parseTimeToSeconds(inputValue);
+    setTimeLeft(newExpirationTime);
+    setInitialTime(newExpirationTime);
+    setIsPaused(false);
   };
 
   const handleStopClick = () => {
     setIsPaused(true);
+  };
+
+  const handleActivateClick = () => {
+    // Ativa a irrigação e inicia o timer manualmente ao pressionar o botão
+    alert("Irrigação ativada manualmente! Timer iniciado.");
+    handleStartTimer(); // Inicia o timer
   };
 
   const getProgressStyle = () => {
@@ -134,8 +136,9 @@ export function TimerIrrigation() {
           </InputMask>
           
           <ButtonsFooter>
-            <ButtonAction onClick={handleConfirmClick}><FiPlay size={50}/></ButtonAction>
+            <ButtonAction onClick={handleStartTimer}><FiPlay size={50}/></ButtonAction>
             <ButtonAction onClick={handleStopClick}><FiStopCircle size={50}/></ButtonAction>
+            <ButtonActivate onClick={handleActivateClick}><FiPower size={50}/></ButtonActivate> {/* Novo botão */}
           </ButtonsFooter>
         </Footer>
       </Content>
