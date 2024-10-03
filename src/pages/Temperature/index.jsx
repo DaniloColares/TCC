@@ -75,8 +75,8 @@ export function Temperature() {
         <FiArrowLeft size={50} />
       </ArrowIcon>
       <FiSun size={350} />
-      <p>Temperatura 1: {temp1}°C</p> {/* Exibindo a temperatura 1 */}
-      <p>Temperatura 2: {temp2}°C</p> {/* Exibindo a temperatura 2 */}
+      <p>Temperatura Externa: {temp1}°C</p> {/* Exibindo a temperatura 1 */}
+      <p>Temperatura Interna: {temp2}°C</p> {/* Exibindo a temperatura 2 */}
       <p>{message}</p> {/* Exibindo a mensagem de alerta */}
     </Container>
   );
